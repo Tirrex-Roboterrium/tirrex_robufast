@@ -1,0 +1,12 @@
+name: "gps"
+driver:
+  pkg: "nmea_navsat_driver"
+  device:  "/dev/ttyUSB1"
+  baudrate: 115200
+configuration:
+  type: ashtech
+  model: proflex800
+  rate: 10
+geometry:
+  parent_link: "base_link"
+  xyz: [0.0 0.0 2.0]
