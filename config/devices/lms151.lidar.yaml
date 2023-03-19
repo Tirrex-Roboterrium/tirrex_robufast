@@ -1,7 +1,7 @@
 name: "lidar"
 driver:
   pkg: "sick_scan"
-  ip:  "192.168.1.112"
+  ip: "192.168.1.112"
   port: "2112"
 configuration:
   type: sick
@@ -10,5 +10,5 @@ configuration:
   resolution: 0.5
 geometry:
   parent_link: "base_link"
-  xyz: [2.02 0.0 0.34]
-  rpy: [0.0 0.0 0.0]
+  xyz: [2.02, 0.0, 0.34]
+  rpy: [0.0, 0.0, 0.0]

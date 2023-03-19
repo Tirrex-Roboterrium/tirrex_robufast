@@ -4,42 +4,70 @@ from launch.actions import (
     IncludeLaunchDescription,
     DeclareLaunchArgument,
     OpaqueFunction,
+    GroupAction,
+    SetEnvironmentVariable,
 )
 
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
+from tirrex_demo import (
+    get_log_directory,
+    get_debug_directory,
+    get_demo_timestamp,
+    save_replay_configuration,
+)
+
 
 def launch_setup(context, *args, **kwargs):
 
+    robot_namespace = "robufast"
+
+    demo = "tirrex_robufast"
+    demo_timestamp = get_demo_timestamp()
+
     mode = LaunchConfiguration("mode").perform(context)
-    robot_namespace = LaunchConfiguration("robot_namespace").perform(context)
-    joystick_type = LaunchConfiguration("joystick_type").perform(context)
-    launch_gazebo = LaunchConfiguration("launch_gazebo").perform(context)
+    record = LaunchConfiguration("record").perform(context)
+    demo_config_directory = LaunchConfiguration("demo_config_directory").perform(context)
+    debug_directory = get_debug_directory(demo, demo_timestamp, record)
+    log_directory = get_log_directory(demo, demo_timestamp, record)
 
-    devices_description = [
-        get_package_share_directory("tirrex_robufast") + "/config/proflex.gps.yaml",
-        get_package_share_directory("tirrex_robufast") + "/config/xsens.imu.yaml",
-        get_package_share_directory("tirrex_robufast") + "/config/sick.lidar.yaml",
-    ]
+    print(" demo_config_directory ", demo_config_directory)
+    print(" debug_directory ", debug_directory)
+    print(" log_directory ", log_directory)
 
-    robot = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            get_package_share_directory("romea_mobile_base_bringup")
-            + "/launch/mobile_base.launch.py"
-        ),
-        launch_arguments={
-            "mode": mode,
-            "robot_namespace": robot_namespace,
-            "robot_type": "robucar",
-            "joystick_type": joystick_type,
-            "launch_gazebo": launch_gazebo,
-            "devices_description": str(devices_description),
-        }.items(),
+    actions = []
+
+    # in rolling : use launch_ros/launch_ros/actions/set_ros_log_dir.py instead
+    actions.append(SetEnvironmentVariable("ROS_LOG_DIR", log_directory))
+
+    actions.append(
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                get_package_share_directory("tirrex_demo")
+                + "/launch/demo.launch.py"
+            ),
+            launch_arguments={
+                "demo": demo,
+                "demo_timestamp": demo_timestamp,
+                "mode": mode,
+                "record": record,
+                "robot_namespace": robot_namespace,
+            }.items(),
+        )
     )
 
-    return [robot]
+    if record == "true":
+
+        save_replay_configuration(
+            demo,
+            demo_timestamp,
+            "robofast.launch.py",
+            {"mode": "replay_"+mode},
+        )
+
+    return [GroupAction(actions)]
 
 
 def generate_launch_description():
@@ -49,16 +77,13 @@ def generate_launch_description():
     declared_arguments.append(DeclareLaunchArgument("mode", default_value="simulation"))
 
     declared_arguments.append(
-        DeclareLaunchArgument("robot_namespace", default_value="robufast")
+        DeclareLaunchArgument(
+            "demo_config_directory",
+            default_value=get_package_share_directory("tirrex_robufast") + "/config",
+        )
     )
 
-    declared_arguments.append(
-        DeclareLaunchArgument("joystick_type", default_value="xbox")
-    )
-
-    declared_arguments.append(
-        DeclareLaunchArgument("launch_gazebo", default_value="True")
-    )
+    declared_arguments.append(DeclareLaunchArgument("record", default_value="false"))
 
     return LaunchDescription(
         declared_arguments + [OpaqueFunction(function=launch_setup)]
