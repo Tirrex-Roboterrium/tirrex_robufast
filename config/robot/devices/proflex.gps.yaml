@@ -9,4 +9,4 @@ configuration:
   rate: 10
 geometry:
   parent_link: "base_link"
-  xyz: [0.0 0.0 2.0]
+  xyz: [0.0, 0.0, 2.0]
