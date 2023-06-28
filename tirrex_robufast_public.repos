@@ -67,7 +67,7 @@ repositories:
     type: git
     url: https://github.com/Romea/romea-ros2-mobile-base.git
     version: main
-  romea_ros2/interfaces/vehicles/campero:
+  romea_ros2/interfaces/vehicles/robucar:
     type: git
     url: https://github.com/Romea/robucar.git
     version: main
