@@ -1,8 +1,10 @@
 name: "gps"
 driver:
-  pkg: "nmea_navsat_driver"
-  device: "/dev/ttyUSB1"
-  baudrate: 115200
+  package: "romea_gps_driver"
+  executable: "serial_node"
+  parameters:
+    device: "/dev/ttyUSB1"
+    baudrate: 115200
 configuration:
   type: ashtech
   model: proflex800
